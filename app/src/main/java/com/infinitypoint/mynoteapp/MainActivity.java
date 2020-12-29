@@ -2,11 +2,13 @@ package com.infinitypoint.mynoteapp;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -20,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,10 +42,10 @@ public class MainActivity extends AppCompatActivity {
     * (vii) Variables
     * (viii) Error Handling in java*/
 
-    Button btnSubmit;
-    EditText etName;
+    Button btnSubmit,btnhtml;
+    EditText etName,passward;
     RequestQueue requestQueue;
-    StringRequest stringRequestToServer;
+
 
 
     @Override
@@ -52,7 +55,9 @@ public class MainActivity extends AppCompatActivity {
 
         //Getting specific widget from our activity_main xml layout using their unique ids (identifiers)
         btnSubmit = findViewById(R.id.btnSubmit);
+        btnhtml = findViewById(R.id.btnhtml);
         etName = findViewById(R.id.etName);
+        passward = findViewById(R.id.passward);
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -68,13 +73,22 @@ public class MainActivity extends AppCompatActivity {
                 //We use control statement to do this for this case we will use if-else statement
 
                  String nameValueEntered = etName.getText().toString().trim();
-                if(nameValueEntered.equals("")){
+                 String passward2 =  passward.getText().toString().trim();
+                if(nameValueEntered.equals("") ||passward2.equals("")){
                     Toast.makeText(MainActivity.this, "You have not entered anything.Please try again", Toast.LENGTH_SHORT).show();
                 }else{
                     //We now use a function/method here
                     addUserRecordToTheDatabase(nameValueEntered);
                 }
 
+
+
+            }
+        });
+        btnhtml.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this,htmlActivity.class));
             }
         });
     }
@@ -82,26 +96,25 @@ public class MainActivity extends AppCompatActivity {
     public  void addUserRecordToTheDatabase(final String userName){
          String url = "http://choop.one/Training/registerUser.php";
 
-       stringRequestToServer = new StringRequest(Request.Method.POST, url,
+        StringRequest stringRequestToServer= new StringRequest(Request.Method.POST, url,
                new Response.Listener<String>() {
                    @Override
                    public void onResponse(String response) {
+
                        try {
                            JSONArray jsonArrayResponses = new JSONArray(response);
                            JSONObject jsonObject = jsonArrayResponses.getJSONObject(0);
                            String result = jsonObject.getString("code");
                            if (result.equals("success")){
                                Toast.makeText(MainActivity.this, jsonObject.getString("message"), Toast.LENGTH_SHORT).show();
-                           }else if (result.equals("success")){
+                           }else if (result.equals("fail")){
                                Toast.makeText(MainActivity.this, jsonObject.getString("message"), Toast.LENGTH_SHORT).show();
                            }else {
-                               Toast.makeText(MainActivity.this, "Error :try again later.", Toast.LENGTH_SHORT).show();
+                               Toast.makeText(MainActivity.this, "Error :try again later."+jsonObject.getString("message"), Toast.LENGTH_SHORT).show();
                            }
                        } catch (JSONException e) {
                            Toast.makeText(MainActivity.this, "Error : "+e.getMessage(), Toast.LENGTH_SHORT).show();
                        }
-
-
                    }
                }, new Response.ErrorListener() {
            @Override
@@ -119,5 +132,7 @@ public class MainActivity extends AppCompatActivity {
        requestQueue.add(stringRequestToServer);
 
     }
+
+
 
 }
